@@ -433,6 +433,13 @@ module Omnibus
       @dependencies.include?(name)
     end
 
+    def rerender_tasks()
+      package_types.each do |pkg_type|
+        taskname = "projects:openstack:#{pkg_type1}"
+        Rake::Task[taskname].clear if Rake::Task.task_defined?(taskname)
+      end
+    end
+
     # @!endgroup
 
     private
@@ -582,7 +589,7 @@ module Omnibus
       @exclusions.each do |pattern|
         command_and_opts << "--exclude '#{pattern}'"
       end
-      
+
       @config_files.each do |config_file|
         command_and_opts << "--config-files '#{config_file}'"
       end
