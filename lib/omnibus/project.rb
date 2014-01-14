@@ -576,6 +576,13 @@ module Omnibus
       @dependencies.include?(name)
     end
 
+    def rerender_tasks()
+      package_types.each do |pkg_type|
+        taskname = "projects:openstack:#{pkg_type1}"
+        Rake::Task[taskname].clear if Rake::Task.task_defined?(taskname)
+      end
+    end
+
     # @!endgroup
 
     private
