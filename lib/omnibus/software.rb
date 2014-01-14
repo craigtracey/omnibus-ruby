@@ -50,11 +50,10 @@ module Omnibus
     attr_reader :project
 
     attr_reader :given_version
-    attr_reader :override_version
     attr_reader :whitelist_files
 
-    def self.load(filename, project, overrides={})
-      new(IO.read(filename), filename, project, overrides)
+    def self.load(filename, project, overrides={}, name=nil)
+      new(IO.read(filename), filename, project, overrides, name)
     end
 
     # @param io [String]
@@ -70,10 +69,10 @@ module Omnibus
     #   project, and override hash directly?  That is, why io AND a
     #   filename, if the filename can always get you the contents you
     #   need anyway?
-    def initialize(io, filename, project, overrides={})
+    def initialize(io, filename, project, overrides={}, name=nil)
       @given_version    = nil
-      @override_version = nil
-      @name             = nil
+      @overrides        = overrides
+      @name             = name
       @description      = nil
       @source           = nil
       @relative_path    = nil
@@ -89,8 +88,8 @@ module Omnibus
       @whitelist_files = Array.new
       instance_eval(io, filename, 0)
 
-      # Set override information after the DSL file has been consumed
-      @override_version = overrides[name]
+      # pull in any overrides that we might have
+      overrides.each { |k,v| instance_variable_set("@#{k}", v) }
 
       render_tasks
     end
@@ -152,7 +151,7 @@ module Omnibus
     # (if set)
     def version(val=NULL_ARG)
       @given_version = val unless val.equal?(NULL_ARG)
-      @override_version || @given_version
+      @given_version
     end
 
     # Add an Omnibus software dependency.
@@ -169,7 +168,7 @@ module Omnibus
     #
     # @return [Boolean]
     def overridden?
-      @override_version && (@override_version != @given_version)
+      !@overrides.empty?
     end
 
     # @todo see comments on {Omnibus::Fetcher#without_caching_for}

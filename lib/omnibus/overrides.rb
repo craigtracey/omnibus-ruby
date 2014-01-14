@@ -1,3 +1,4 @@
+require 'yaml'
 require 'pp'
 
 module Omnibus
@@ -18,6 +19,12 @@ module Omnibus
     # @return [Hash, nil]
     def self.parse_file(file)
       if file
+        begin
+          overrides = YAML.load_file(file)
+          return overrides
+        rescue
+        end
+
         File.readlines(file).inject({}) do |acc, line|
           info = line.split
 
@@ -31,7 +38,8 @@ module Omnibus
             raise ArgumentError, "Multiple overrides present for '#{package}' in overrides file #{file}!"
           end
 
-          acc[package] = version
+          acc[package] = []
+          acc[package]['given_version'] = version
           acc
         end
       else
