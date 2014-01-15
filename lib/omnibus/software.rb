@@ -462,17 +462,15 @@ module Omnibus
 
     private
 
-    # Apply overrides in the @overrides hash that mask instance variables
-    # that are set by parsing the DSL
-    #
-    def apply_overrides(attr)
-      val = instance_variable_get(:"@#{attr}")
-      if val.is_a?(Hash) || overrides[attr].is_a?(Hash)
-        val ||= {}
-        override = overrides[attr] || {}
-        val.merge(override)
-      else
-        overrides[attr] || val
+    def apply_overrides(overrides)
+      # first we need to do some cleanup
+      if overrides[name]
+        if overrides[name].has_key?('source')
+          overrides[name]['source'] =
+            overrides[name]['source'].inject({}){|x,(k,v)| x[k.to_sym] = v; x}
+        end
+        version(overrides[name]['version']) if overrides[name]['version']
+        overrides[name].each { |k,v| instance_variable_set("@#{k}", v) }
       end
     end
 
