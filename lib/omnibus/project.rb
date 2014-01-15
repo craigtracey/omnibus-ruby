@@ -581,6 +581,7 @@ module Omnibus
         taskname = "projects:openstack:#{pkg_type}"
         Rake::Task[taskname].clear if Rake::Task.task_defined?(taskname)
       end
+      render_tasks
     end
 
     # @!endgroup
