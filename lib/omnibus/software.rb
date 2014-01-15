@@ -89,8 +89,8 @@ module Omnibus
       instance_eval(io, filename, 0)
 
       # pull in any overrides that we might have
-      overrides.each { |k,v| instance_variable_set("@#{k}", v) }
-
+      # we should have a name at this point...if not, fail
+      apply_overrides overrides
       render_tasks
     end
 
@@ -354,6 +354,18 @@ module Omnibus
     end
 
     private
+
+    def apply_overrides(overrides)
+      # first we need to do some cleanup
+      if overrides[name]
+        if overrides[name].has_key?('source')
+          overrides[name]['source'] =
+            overrides[name]['source'].inject({}){|x,(k,v)| x[k.to_sym] = v; x}
+        end
+        version(overrides[name]['version']) if overrides[name]['version']
+        overrides[name].each { |k,v| instance_variable_set("@#{k}", v) }
+      end
+    end
 
     # @todo What?!
     # @todo It seems that this is not used... remove it
